@@ -61,9 +61,25 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
 
     steps:
+      - name: Validate Backend Deployment Secrets
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          MYSQL_URL: ${{ secrets.MYSQL_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "Skipping backend deployment: RENDER_DEPLOY_HOOK_URL is not configured."
+            exit 0
+          fi
+          if [ -z "$MYSQL_URL" ]; then
+            echo "Backend deployment blocked: MYSQL_URL secret is missing."
+            echo "Add MYSQL_URL in GitHub Secrets and map it in your runtime service from variable MySQL.MYSQL_URL."
+            exit 1
+          fi
+
       - name: Trigger Render Backend Deployment
         env:
           RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          MYSQL_URL: ${{ secrets.MYSQL_URL }}
         # Execute only if the deploy hook secret is configured in the repository settings
         if: env.RENDER_DEPLOY_HOOK_URL != ''
         run: |

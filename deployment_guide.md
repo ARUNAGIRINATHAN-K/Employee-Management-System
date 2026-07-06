@@ -66,13 +66,19 @@ Render hosts backend web services directly from GitHub. It reads the dynamic por
    - Go to the **Environment** tab of the service and add:
      | Key | Value | Description |
      | :--- | :--- | :--- |
-     | `SPRING_DATASOURCE_URL` | *[Your Constructed Railway JDBC URL]* | Connects backend to Railway MySQL |
+       | `MYSQL_URL` | `${{ MySQL.MYSQL_URL }}` | Service-level DB URL variable sourced from Railway MySQL service |
+       | `SPRING_DATASOURCE_URL` | *Optional fallback JDBC URL* | Backward compatibility fallback if `MYSQL_URL` is not set |
      | `SPRING_DATASOURCE_USERNAME` | `<MYSQLUSER>` | Database username from Railway |
      | `SPRING_DATASOURCE_PASSWORD` | `<MYSQLPASSWORD>` | Database password from Railway |
      | `SPRING_SQL_INIT_MODE` | `always` | **Set to `always` on first deployment** to seed tables and roles. Set to `never` after the first successful boot to prevent re-seeding. |
      | `CORS_ALLOWED_ORIGINS` | `https://<your-vercel-app>.vercel.app` | **Note:** Set this to your actual Vercel URL once generated, to prevent CORS blocks. |
      | `JWT_SECRET` | *[Secure 64-character Hex string]* | Base64 or Hex key to sign auth tokens |
      | `JWT_EXPIRATION` | `86400000` | Token validity duration in ms (24 hours) |
+
+    - The backend now reads datasource URL in this order:
+       1. `MYSQL_URL`
+       2. `SPRING_DATASOURCE_URL`
+       3. Local default in `application.properties`
 
 4. **Deploy & Retrieve API URL:**
    - Click **Create Web Service** and monitor logs.
